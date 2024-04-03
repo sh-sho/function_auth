@@ -27,6 +27,7 @@
     * SDK for Python: 2.125.0
 
 ## ハンズオン全体像
+![alt text](./images/image-00.png)
 
 ## 事前準備
 ### ハンズオンで使うコードのクローン
