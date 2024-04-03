@@ -181,19 +181,20 @@ import oci
 import base64
 import json
 import logging
+import os
 
 from fdk import response
 
-rp = os.getenv("OCI_RESOURCE_PRINCIPAL_VERSION", "") # ... 1
+# 1 
+rp = os.getenv("OCI_RESOURCE_PRINCIPAL_VERSION", "")
 if rp == "2.2":
-    signer = oci.auth.signers.get_resource_principals_signer() # ... 1
+    signer = oci.auth.signers.get_resource_principals_signer()
 else:
-    signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner() # ... 1
+    signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
 
-compute_client = oci.core.ComputeClient(config={}, signer=signer) 
-signer = oci.auth.signers.get_resource_principals_signer()
 client = oci.secrets.SecretsClient({}, signer=signer)
 
+# 2
 def get_text_secret(secret_ocid):
     get_secret = client.get_secret_bundle(secret_ocid).data.secret_bundle_content.content.encode('utf-8')
     decrypt_secret = base64.b64decode(get_secret).decode("utf-8")
@@ -205,7 +206,7 @@ def handler(ctx, data: io.BytesIO = None):
 
     secret_ocid = secret_type = ""
     try:
-        cfg = dict(ctx.Config())
+        cfg = dict(ctx.Config()) # ... 3
         secret_ocid = cfg["secret_ocid"]
         logging.getLogger().info("Secret ocid = " + secret_ocid)
         secret_type = cfg["secret_type"]
@@ -214,7 +215,7 @@ def handler(ctx, data: io.BytesIO = None):
         print('ERROR: Missing configuration keys, secret ocid and secret_type', e, flush=True)
         raise
 
-    secret_text = get_text_secret(secret_ocid)
+    secret_text = get_text_secret(secret_ocid) # ... 4
     logging.getLogger().debug("secret detail")
     logging.getLogger().debug(secret_text)
 
@@ -223,9 +224,15 @@ def handler(ctx, data: io.BytesIO = None):
         ctx, response_data=secret_text,
         headers={"Content-Type": "application/json"}
     )
+
 ```
 
 コードを説明します。
+
+1. OCI Functionsにの認証・認可の処理です。OCI FunctionsからほかのOCIリソース (OCI Vault) のAPIを実行するための処理です。
+2. OCI VaultのSecretを取得する関数です。SecretのOCIDをもとに、Secretを取得しています。SecretはBase64エンコードされているため、デコードしています。
+3. FunctionsのConfigurationから`secret_ocid`と`secret_type`をkeyに持つ値を取得しています。
+4. `secret_ocid`を`get_text_secret`関数に渡し、Secretを取得します。
 
 #### OCIR にログインするための資格情報を取得する
 OCIR にログインするための資格情報を取得します。OCI Console 右上の人型アイコンをクリックし、自身のユーザー名（メールアドレス）が表示されている項目をクリックします。
@@ -268,7 +275,6 @@ Login Succeeded
 ```console
 cd function_auth/sample-auth-func
 fn deploy -v --no-bump --app sample-auth-app-<ご自身の名前等>
-
 ```
 
 実行結果
@@ -289,7 +295,7 @@ Successfully created function: sample-auth-func with nrt.ocir.io/<namespace>/sob
 作成したファンクションをクリックします。
 ![alt text](./images/image-41.png)
 
-構成をクリックして以下のキーと値のペアを設定します。
+構成をクリックして以下の2つのキーと値のペアを設定します。
 
 ![alt text](./images/image-42.png)
 
@@ -304,3 +310,4 @@ $ fn invoke sample-auth-app sample-auth-func
 ```console
 {'secret content': 'sample_secret_contents'}
 ```
+OCI VaultのSecretから値が取得できていることを確認します。
