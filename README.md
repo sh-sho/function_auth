@@ -227,7 +227,7 @@ def handler(ctx, data: io.BytesIO = None):
 
 1. OCI FunctionsからほかのOCIリソース (OCI Vault) のAPIを実行するための認証・認可の処理です。
 2. OCI VaultのSecretを取得する関数です。SecretのOCIDをもとに、Secretを取得しています。SecretはBase64エンコードされているため、デコードしています。
-3. FunctionsのConfigurationから`secret_ocid`と`secret_type`をkeyに持つ値を取得しています。
+3. FunctionsのConfigurationから`secret_ocid`をkeyに持つ値を取得しています。
 4. `secret_ocid`を`get_text_secret`関数に渡し、Secretを取得します。
 
 #### OCIR にログインするための資格情報を取得する
@@ -286,7 +286,7 @@ run_image: fnproject/python:3.11
 entrypoint: /python/bin/fdk /function/func.py handler
 memory: 256
 config:
-  secret_ocid: ocid1.vaultsecret.oc1.phx.amaaaaxxxx
+  secret_ocid: ocid1.vaultsecret.oc1.phx.amaaaaxxxx # 作成したsecretのocid
 ```
 
 #### Function のデプロイ
