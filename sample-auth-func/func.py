@@ -3,16 +3,10 @@ import oci
 import base64
 import json
 import logging
-import os
 
 from fdk import response
 
-rp = os.getenv("OCI_RESOURCE_PRINCIPAL_VERSION", "")
-if rp == "2.2":
-    signer = oci.auth.signers.get_resource_principals_signer()
-else:
-    signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
-
+signer = oci.auth.signers.get_resource_principals_signer()
 client = oci.secrets.SecretsClient({}, signer=signer)
 
 def get_text_secret(secret_ocid):
