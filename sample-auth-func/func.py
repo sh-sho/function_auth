@@ -3,20 +3,22 @@ import oci
 import base64
 import json
 import logging
+import os
 
 from fdk import response
 
-signer = oci.auth.signers.get_resource_principals_signer()
+rp = os.getenv("OCI_RESOURCE_PRINCIPAL_VERSION", "")
+if rp == "2.2":
+    signer = oci.auth.signers.get_resource_principals_signer()
+else:
+    signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
+
 client = oci.secrets.SecretsClient({}, signer=signer)
 
 def get_text_secret(secret_ocid):
-    try:
-        get_secret = client.get_secret_bundle(secret_ocid).data.secret_bundle_content.content.encode('utf-8')
-        decrypt_secret = base64.b64decode(get_secret).decode("utf-8")
-        logging.getLogger().info(get_secret)
-    except Exception as e:
-        print("Error: failed to retrieve the secret content", e, flush=True)
-        raise
+    get_secret = client.get_secret_bundle(secret_ocid).data.secret_bundle_content.content.encode('utf-8')
+    decrypt_secret = base64.b64decode(get_secret).decode("utf-8")
+    logging.getLogger().info(get_secret)
     return {"secret content": decrypt_secret}
 
 def handler(ctx, data: io.BytesIO = None):
