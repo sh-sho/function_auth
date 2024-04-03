@@ -7,4 +7,4 @@ run_image: fnproject/python:3.11
 entrypoint: /python/bin/fdk /function/func.py handler
 memory: 256
 config:
-  secret_ocid: ocid1.vaultsecret.oc1.phx.amaaaaaassl65iqagmhmonjo2xi4n5brvktkooyzpfbxh3zmyu75jtwlptna
+  secret_ocid: ocid1.vaultsecret.oc1.ap-tokyo-1.amaaaaaassl65iqaxqwwrtm63s2jpd7xa2ixfekrykgijy2oeoapu7n7tctq

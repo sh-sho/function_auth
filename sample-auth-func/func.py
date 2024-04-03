@@ -18,13 +18,13 @@ def get_text_secret(secret_ocid):
 def handler(ctx, data: io.BytesIO = None):
     logging.getLogger().info("function start")
 
-    secret_ocid = secret_type = ""
+    secret_ocid = ""
     try:
         cfg = dict(ctx.Config())
         secret_ocid = cfg["secret_ocid"]
         logging.getLogger().info("Secret ocid = " + secret_ocid)
     except Exception as e:
-        print('ERROR: Missing configuration keys, secret ocid and secret_type', e, flush=True)
+        print('ERROR: Missing configuration keys, secret ocid', e, flush=True)
         raise
 
     secret_text = json.dumps(get_text_secret(secret_ocid))

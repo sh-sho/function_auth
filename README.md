@@ -204,10 +204,8 @@ def handler(ctx, data: io.BytesIO = None):
         cfg = dict(ctx.Config()) # ... 3
         secret_ocid = cfg["secret_ocid"]
         logging.getLogger().info("Secret ocid = " + secret_ocid)
-        secret_type = cfg["secret_type"]
-        logging.getLogger().info("Secret type = " + secret_type)
     except Exception as e:
-        print('ERROR: Missing configuration keys, secret ocid and secret_type', e, flush=True)
+        print('ERROR: Missing configuration keys, secret ocid', e, flush=True)
         raise
 
     secret_text = get_text_secret(secret_ocid) # ... 4
@@ -286,7 +284,7 @@ run_image: fnproject/python:3.11
 entrypoint: /python/bin/fdk /function/func.py handler
 memory: 256
 config:
-  secret_ocid: ocid1.vaultsecret.oc1.phx.amaaaaxxxx # 作成したsecretのocid
+  secret_ocid: ocid1.vaultsecret.oc1.ap-tokyo-1.amaaaxxxx # 作成したsecretのocid
 ```
 
 #### Function のデプロイ
