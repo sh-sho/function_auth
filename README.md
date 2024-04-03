@@ -169,7 +169,7 @@ Current context: ap-tokyo-1
 
 api-url: https://functions.ap-tokyo-1.oci.oraclecloud.com
 oracle.compartment-id:  <ハンズオンで使用するコンパートメントID>
-provider: oracle-ip
+provider: oracle-cs
 registry: nrt.ocir.io/<namespace>/sobata
 ```
 
@@ -182,17 +182,11 @@ import oci
 import base64
 import json
 import logging
-import os
 
 from fdk import response
 
-# 1 
-rp = os.getenv("OCI_RESOURCE_PRINCIPAL_VERSION", "")
-if rp == "2.2":
-    signer = oci.auth.signers.get_resource_principals_signer()
-else:
-    signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
-
+# 1
+signer = oci.auth.signers.get_resource_principals_signer()
 client = oci.secrets.SecretsClient({}, signer=signer)
 
 # 2
@@ -226,11 +220,12 @@ def handler(ctx, data: io.BytesIO = None):
         headers={"Content-Type": "application/json"}
     )
 
+
 ```
 
 コードを説明します。
 
-1. OCI Functionsにの認証・認可の処理です。OCI FunctionsからほかのOCIリソース (OCI Vault) のAPIを実行するための処理です。
+1. OCI FunctionsからほかのOCIリソース (OCI Vault) のAPIを実行するための認証・認可の処理です。
 2. OCI VaultのSecretを取得する関数です。SecretのOCIDをもとに、Secretを取得しています。SecretはBase64エンコードされているため、デコードしています。
 3. FunctionsのConfigurationから`secret_ocid`と`secret_type`をkeyに持つ値を取得しています。
 4. `secret_ocid`を`get_text_secret`関数に渡し、Secretを取得します。
@@ -271,6 +266,29 @@ https://docs.docker.com/engine/reference/commandline/login/#credentials-store
 Login Succeeded
 ```
 
+
+#### Function のConfigurationの設定
+次にFunctionのConfigurationを設定します。func.yamlファイルにsecretのOCID
+のキーと値のペアを設定します。
+
+secret_ocidは[シークレットの作成](#secretの作成)でコピーしたシークレットのOCIDを記入します。
+```console
+cd ~/function_auth/sample-auth-func/
+```
+`func.yaml`
+```yaml
+schema_version: 20180708
+name: sample-auth-func
+version: 0.0.8
+runtime: python
+build_image: fnproject/python:3.11-dev
+run_image: fnproject/python:3.11
+entrypoint: /python/bin/fdk /function/func.py handler
+memory: 256
+config:
+  secret_ocid: ocid1.vaultsecret.oc1.phx.amaaaaxxxx
+```
+
 #### Function のデプロイ
 作成したアプリケーションに Function コードをデプロイします。
 ```console
@@ -291,16 +309,6 @@ e0f4a6983934: Pushed
 Updating function sample-auth-func using image nrt.ocir.io/<namespace>/sobata/sample-auth-func:0.0.8...
 Successfully created function: sample-auth-func with nrt.ocir.io/<namespace>/sobata/sample-auth-func:0.0.8
 ```
-#### Function のConfigurationの設定
-次にFunctionのConfigurationを設定します。作成したFunctionのApplicationの画面に行きます。
-作成したファンクションをクリックします。
-![alt text](./images/image-41.png)
-
-構成をクリックして以下の2つのキーと値のペアを設定します。
-
-![alt text](./images/image-42.png)
-
-secret_ocidは[シークレットの作成](#secretの作成)でコピーしたシークレットのOCIDを記入します。
 
 #### Function を用いてSecretを取得
 作成したFunctionを実行します。
