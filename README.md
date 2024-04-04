@@ -156,7 +156,7 @@ fn update context registry nrt.ocir.io/${NAMESPACE}/<任意の名前>
 
 実行結果例（環境によって実行結果は異なります）
 ```console
-Current context updated registry with nrt.ocir.io/orasejapan/<namespace>
+Current context updated registry with nrt.ocir.io/<namespace>/<任意の名前>
 ```
 
 ここで、今までの設定事項を確認してみます。
